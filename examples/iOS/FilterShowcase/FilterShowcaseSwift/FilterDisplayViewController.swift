@@ -11,6 +11,7 @@ class FilterDisplayViewController: UIViewController, UISplitViewControllerDelega
     
     let videoCamera:Camera?
     var blendImage:PictureInput?
+    var movie:MovieInput?
 
     required init(coder aDecoder: NSCoder)
     {
@@ -45,9 +46,16 @@ class FilterDisplayViewController: UIViewController, UISplitViewControllerDelega
                     currentFilterConfiguration.filter.addTarget(view)
                 case .blend:
                     videoCamera.addTarget(currentFilterConfiguration.filter)
-                    self.blendImage = PictureInput(imageName:blendImageName)
-                    self.blendImage?.addTarget(currentFilterConfiguration.filter)
-                    self.blendImage?.processImage()
+                    
+                    let bundleURL = Bundle.main.resourceURL!
+                    let movieURL = URL(string:"HEVC_Alpha-HEVC_Alpha.mov", relativeTo:bundleURL)!
+                    
+                    if let movie = try? MovieInput(url:movieURL, playAtActualSpeed:true) {
+                        self.movie = movie
+                        movie.addTarget(currentFilterConfiguration.filter)
+                        movie.start()
+                    }
+                    
                     currentFilterConfiguration.filter.addTarget(view)
                 case let .custom(filterSetupFunction:setupFunction):
                     currentFilterConfiguration.configureCustomFilter(setupFunction(videoCamera, currentFilterConfiguration.filter, view))
